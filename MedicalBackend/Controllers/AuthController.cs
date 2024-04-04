@@ -1,3 +1,8 @@
+using AutoMapper;
+using MedicalBackend.Entities;
+using MedicalBackend.Repositories.Abstractions;
+using MedicalBackend.Utils;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedicalBackend.Controllers;
@@ -7,9 +12,40 @@ namespace MedicalBackend.Controllers;
 [Route("/api/auth")]
 public class AuthController : ControllerBase
 {
-    [HttpGet("test")]
-    public async Task<ActionResult> GetAllAssignedCourseUser()
+    private readonly IIdentityRepository _identityRepository;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IMapper _mapper;
+
+    public AuthController(IMapper mapper, UserManager<ApplicationUser> userManager,RoleManager<IdentityRole> roleManager, IIdentityRepository identityRepository)
     {
-        return Ok();
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _identityRepository = identityRepository;
+        _mapper = mapper;
+    }
+    
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var response = await _identityRepository.Login(request);
+        if (response.Token == null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(response);
+    }
+    
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    {
+        var response = await _identityRepository.Register(request,"User");
+        if (response == null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(response);
     }
 }

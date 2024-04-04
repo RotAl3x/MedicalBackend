@@ -26,7 +26,7 @@ services.AddCors(options =>
     });
 });
 
-//services.AddAutoMapper(typeof(MappingProfile));
+services.AddAutoMapper(typeof(MappingProfile));
 
 services.AddDefaultIdentity<ApplicationUser>()
     .AddRoles<IdentityRole>()
@@ -98,6 +98,19 @@ app.UseEndpoints(endpoints =>
         "admin/{controller=Home}/{action=Index}/{id?}");
     endpoints.MapRazorPages();
 });
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    var roles = new[] { "User", "Doctor", "Admin" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+
+}
 
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
