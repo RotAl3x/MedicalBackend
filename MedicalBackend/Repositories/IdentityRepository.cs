@@ -59,6 +59,8 @@ public class IdentityRepository : IIdentityRepository
             FirstName = request.FirstName,
             LastName = request.LastName,
             EmailConfirmed = true,
+            PhoneNumber = request.PhoneNumber,
+            PhoneNumberConfirmed = true,
             Created = DateTime.Now.ToUniversalTime(),
             Updated = DateTime.Now.ToUniversalTime(),
         };

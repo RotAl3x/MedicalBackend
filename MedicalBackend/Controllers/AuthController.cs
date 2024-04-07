@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
         var response = await _identityRepository.Login(request);
         if (response.Token == null)
         {
-            return BadRequest();
+            return BadRequest("Verifică formularul");
         }
 
         return Ok(response);
@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
         var response = await _identityRepository.Register(request,"User");
         if (response == null)
         {
-            return BadRequest();
+            return BadRequest("Verifică formularul");
         }
 
         return Ok(response);
