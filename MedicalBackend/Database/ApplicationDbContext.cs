@@ -8,6 +8,7 @@ namespace MedicalBackend.Database;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
+    public DbSet<Price> Prices { get; set; } 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
