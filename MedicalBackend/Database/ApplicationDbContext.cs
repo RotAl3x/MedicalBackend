@@ -10,6 +10,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public DbSet<Price> Prices { get; set; } 
     public DbSet<Doctor> Doctors { get; set; }
+    public DbSet<TestimonialPerson> TestimonialPersons { get; set; }
+    
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
