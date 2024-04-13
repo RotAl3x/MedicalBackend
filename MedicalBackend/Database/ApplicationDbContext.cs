@@ -1,6 +1,4 @@
-using System.Collections.Specialized;
 using MedicalBackend.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +9,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Price> Prices { get; set; } 
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<TestimonialPerson> TestimonialPersons { get; set; }
+    public DbSet<WorkHoursDay> WorkHoursDays { get; set; }
+    public DbSet<FreeDay> FreeDays { get; set; }
+    public DbSet<RoomOrDevice> RoomsOrDevices { get; set; }
+    public DbSet<MedicalService> MedicalServices { get; set; }
+    public DbSet<Disease> Diseases { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {

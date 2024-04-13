@@ -2,6 +2,8 @@ using AutoMapper;
 using MedicalBackend.Entities;
 using MedicalBackend.Repositories.Abstractions;
 using MedicalBackend.Utils;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,9 +40,11 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("register")]
+    [Authorize(Roles = "Admin",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        var response = await _identityRepository.Register(request,"User");
+        var response = await _identityRepository.Register(request,"Doctor");
         if (response == null)
         {
             return BadRequest("Verifică formularul");

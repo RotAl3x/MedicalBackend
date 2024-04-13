@@ -3,6 +3,7 @@ using MedicalBackend.Database;
 using MedicalBackend.Entities;
 using MedicalBackend.Utils;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -62,7 +63,6 @@ services.Configure<IdentityOptions>(options =>
 
     options.SignIn.RequireConfirmedEmail = true;
     options.ClaimsIdentity.UserIdClaimType = "id";
-
 });
 
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
@@ -109,7 +109,40 @@ using (var scope = app.Services.CreateScope())
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
+    
+    var emailAdmin = configuration.GetValue<string>("Admin:Email");
+    var passwordAdmin = configuration.GetValue<string>("Admin:Password");
 
+    var user = new ApplicationUser
+    {
+        UserName = emailAdmin,
+        Email = emailAdmin,
+        NormalizedUserName = emailAdmin?.ToUpper(),
+        NormalizedEmail = emailAdmin?.ToUpper(),
+        FirstName = "Admin",
+        LastName = "01",
+        EmailConfirmed = true,
+        Created = DateTime.Now.ToUniversalTime(),
+        Updated = DateTime.Now.ToUniversalTime(),
+    };
+
+    var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
+
+    if (!context.Users.Any(u => u.UserName == user.UserName))
+    {
+        var password = new PasswordHasher<ApplicationUser>();
+        var hashed = password.HashPassword(user, passwordAdmin);
+        user.PasswordHash = hashed;
+
+        var userStore = new UserStore<ApplicationUser>(context);
+        await userStore.CreateAsync(user);
+
+        UserManager<ApplicationUser> _userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
+        ApplicationUser userToAddRole = await _userManager.FindByEmailAsync(user.Email);
+        await _userManager.AddToRolesAsync(userToAddRole, roles);
+
+        await context.SaveChangesAsync();
+    }
 }
 
 

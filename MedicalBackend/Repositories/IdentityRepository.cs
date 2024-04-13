@@ -58,14 +58,13 @@ public class IdentityRepository : IIdentityRepository
             Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            EmailConfirmed = true,
             PhoneNumber = request.PhoneNumber,
-            PhoneNumberConfirmed = true,
+            EmailConfirmed = true,
             Created = DateTime.Now.ToUniversalTime(),
             Updated = DateTime.Now.ToUniversalTime(),
         };
 
-        var createResult = await _userManager.CreateAsync(user, request.Password);
+        var createResult = await _userManager.CreateAsync(user, "parola01");
 
         if (!createResult.Succeeded)
         {
