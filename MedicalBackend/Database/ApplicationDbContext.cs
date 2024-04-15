@@ -14,6 +14,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<RoomOrDevice> RoomsOrDevices { get; set; }
     public DbSet<MedicalService> MedicalServices { get; set; }
     public DbSet<Disease> Diseases { get; set; }
+    public DbSet<Appointment> Appointments { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {

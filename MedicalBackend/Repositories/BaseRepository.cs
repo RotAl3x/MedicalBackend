@@ -18,12 +18,12 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public Task<List<TEntity>> GetAll()
     {
-        return _table.ToListAsync();
+        return _table.Where(t=>!t.IsDeleted).ToListAsync();
     }
 
     public async Task<TEntity> GetById(Guid id)
     {
-        var entry = await _table.FirstOrDefaultAsync(t => t.Id == id);
+        var entry = await _table.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
         if (entry is null)
         {
             return null;
@@ -51,7 +51,8 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         {
             return null;
         }
-        _table.Remove(entry);
+
+        entry.IsDeleted = true;
         await Save();
         return "Deleted";
     }
