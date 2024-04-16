@@ -1,6 +1,7 @@
 using System.Text;
 using MedicalBackend.Database;
 using MedicalBackend.Entities;
+using MedicalBackend.Hub;
 using MedicalBackend.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -21,9 +22,11 @@ services.AddCors(options =>
     options.AddPolicy("MedicalCorsPolicy", builder =>
     {
         builder
-            .WithOrigins("*")
+            .WithOrigins("http://localhost:4200")
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .SetIsOriginAllowed((hosts)=>true);
     });
 });
 
@@ -67,6 +70,7 @@ services.Configure<IdentityOptions>(options =>
 
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 services.AddSwaggerGen();
+services.AddSignalR();
 
 var connectionString = configuration.GetConnectionString("Default");
 services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
@@ -97,6 +101,7 @@ app.UseEndpoints(endpoints =>
         "default",
         "admin/{controller=Home}/{action=Index}/{id?}");
     endpoints.MapRazorPages();
+    endpoints.MapHub<MessageHub>("/appoointment");
 });
 
 using (var scope = app.Services.CreateScope())

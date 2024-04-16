@@ -1,10 +1,12 @@
 using MedicalBackend.Database;
+using MedicalBackend.DTOs;
 using MedicalBackend.Entities;
+using MedicalBackend.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace MedicalBackend.Repositories;
 
-public class AppointmentRepository: BaseRepository<Appointment>
+public class AppointmentRepository: BaseRepository<Appointment>,IAppointmentRepository
 {
     private readonly ApplicationDbContext _dbContext;
 
@@ -21,6 +23,24 @@ public class AppointmentRepository: BaseRepository<Appointment>
             .Include(a => a.ApplicationUser)
             .Include(a => a.MedicalService)
             .Include(a => a.Disease);
+    }
 
+    public async Task<Appointment> Create(AppointmentDto newObject)
+    {
+        var appointment = new Appointment
+        {
+            Start = newObject.Start,
+            End = newObject.End,
+            RoomOrDeviceId = newObject.RoomOrDeviceId,
+            ApplicationUserId = newObject.ApplicationUserId,
+            MedicalServiceId = newObject.MedicalServiceId,
+            Phone = newObject.Phone,
+            DiseaseId = newObject.DiseaseId,
+        };
+
+        var dbAppointment = await _dbContext.Appointments.AddAsync(appointment);
+        await _dbContext.SaveChangesAsync();
+
+        return dbAppointment.Entity;
     }
 }
