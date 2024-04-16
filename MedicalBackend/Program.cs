@@ -1,6 +1,7 @@
 using System.Text;
 using MedicalBackend.Database;
 using MedicalBackend.Entities;
+using MedicalBackend.Services;
 using MedicalBackend.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -66,6 +67,8 @@ services.Configure<IdentityOptions>(options =>
 });
 
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+services.AddSingleton<AppointmentSocketService>();
+services.AddHostedService<Worker>();
 services.AddSwaggerGen();
 
 var connectionString = configuration.GetConnectionString("Default");
