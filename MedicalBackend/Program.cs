@@ -101,7 +101,7 @@ app.UseEndpoints(endpoints =>
         "default",
         "admin/{controller=Home}/{action=Index}/{id?}");
     endpoints.MapRazorPages();
-    endpoints.MapHub<MessageHub>("/appoointment");
+    endpoints.MapHub<MessageHub>("/appointment");
 });
 
 using (var scope = app.Services.CreateScope())
