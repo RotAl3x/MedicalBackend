@@ -52,4 +52,17 @@ public class AuthController : ControllerBase
 
         return Ok(response);
     }
+    
+    [HttpGet("getAllUsersByRole/{role}")]
+    public async Task<IActionResult> GetAllUsers([FromRoute] string role)
+    {
+        var users = await _userManager.GetUsersInRoleAsync(role);
+
+        if (!users.Any())
+        {
+            return NotFound("Nu există");
+        }
+
+        return Ok(users);
+    }
 }
