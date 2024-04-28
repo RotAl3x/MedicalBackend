@@ -18,7 +18,7 @@ public class AppointmentRepository: BaseRepository<Appointment>,IAppointmentRepo
     public async Task<IEnumerable<Appointment>> GetByRoomIdOrDoctorId(Guid? roomOrDeviceId,string? doctorUserId)
     {
         return _dbContext.Appointments
-            .Where(a => a.RoomOrDeviceId == roomOrDeviceId || a.ApplicationUserId == doctorUserId)
+            .Where(a => (a.RoomOrDeviceId == roomOrDeviceId || a.ApplicationUserId == doctorUserId) && a.IsDeleted == false)
             .Include(a => a.RoomOrDevice)
             .Include(a => a.ApplicationUser)
             .Include(a => a.MedicalService)
@@ -42,5 +42,18 @@ public class AppointmentRepository: BaseRepository<Appointment>,IAppointmentRepo
         await _dbContext.SaveChangesAsync();
 
         return dbAppointment.Entity;
+    }
+    
+    public async Task<Appointment> Delete(Guid id)
+    {
+        var entry = await _dbContext.Appointments.FirstOrDefaultAsync(t => t.Id == id);
+        if (entry is null)
+        {
+            return null;
+        }
+
+        entry.IsDeleted = true;
+        await Save();
+        return entry;
     }
 }

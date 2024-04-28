@@ -3,6 +3,8 @@ using MedicalBackend.Entities;
 using MedicalBackend.Hub;
 using MedicalBackend.Hub.Abstractions;
 using MedicalBackend.Repositories.Abstractions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -43,7 +45,7 @@ public class AppointmentController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("${roomId}/${doctorId}")]
+    [HttpGet("{roomId}/{doctorId}")]
     public async Task<ActionResult> GetByRoomIdOrDoctorId(Guid roomId, string doctorId)
     {
         var response = await _appointmentRepository.GetByRoomIdOrDoctorId(roomId, doctorId);
@@ -56,6 +58,8 @@ public class AppointmentController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Doctor",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<ActionResult> Create(AppointmentDto obj)
     {
         var response = await _appointmentRepository.Create(obj);
@@ -67,14 +71,15 @@ public class AppointmentController : ControllerBase
         return Ok(response);
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
-        var response = await _baseRepository.Delete(id);
-        if (response == null)
+        var response = await _appointmentRepository.Delete(id);
+        if (response.Id == null)
         {
             return BadRequest();
         }
+        await messageHub.Clients.All.SendAppointmentToUser(response);
 
         return Ok();
     }

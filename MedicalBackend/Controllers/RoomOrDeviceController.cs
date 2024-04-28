@@ -52,7 +52,7 @@ public class RoomOrDeviceController : ControllerBase
         return Ok(response);
     }
     
-    [HttpDelete]
+    [HttpDelete("${id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
         var response = await _baseRepository.Delete(id);
