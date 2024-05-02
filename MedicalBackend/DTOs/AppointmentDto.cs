@@ -13,4 +13,6 @@ public class AppointmentDto
     public Guid MedicalServiceId { get; set; }
     public string Phone { get; set; }
     public Guid DiseaseId { get; set; }
+    public bool IsFreeDay { get; set; }
+    public bool IsDoctorFreeDay { get; set; }
 }

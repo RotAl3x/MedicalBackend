@@ -22,7 +22,7 @@ public class DiseaseController : ControllerBase
         return Ok(response);
     }
     
-    [HttpGet("${id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult> Get(Guid id)
     {
         var response = await _baseRepository.GetById(id);

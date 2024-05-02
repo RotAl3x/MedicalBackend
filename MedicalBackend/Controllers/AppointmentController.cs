@@ -33,7 +33,7 @@ public class AppointmentController : ControllerBase
         return Ok(response);
     }
 
-    [HttpGet("${id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult> Get(Guid id)
     {
         var response = await _baseRepository.GetById(id);
@@ -44,9 +44,11 @@ public class AppointmentController : ControllerBase
 
         return Ok(response);
     }
-
+    
     [HttpGet("{roomId}/{doctorId}")]
-    public async Task<ActionResult> GetByRoomIdOrDoctorId(Guid roomId, string doctorId)
+    [HttpGet("roomId/{roomId}")]
+    [HttpGet("doctorId/{doctorId}")]
+    public async Task<ActionResult> GetByRoomIdOrDoctorId(Guid? roomId, string? doctorId)
     {
         var response = await _appointmentRepository.GetByRoomIdOrDoctorId(roomId, doctorId);
         if (!response.Any())
@@ -70,7 +72,7 @@ public class AppointmentController : ControllerBase
         await messageHub.Clients.All.SendAppointmentToUser(response);
         return Ok(response);
     }
-
+    
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {

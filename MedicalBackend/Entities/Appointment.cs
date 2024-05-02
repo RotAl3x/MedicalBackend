@@ -19,4 +19,6 @@ public class Appointment:Entity
     [ForeignKey(("Disease"))]
     public Guid DiseaseId { get; set; }
     public Disease Disease { get; set; }
+    public bool IsFree { get; set; }
+    public bool IsDoctorFree { get; set; }
 }
