@@ -11,6 +11,7 @@ public static class CoreSpecifications
         services.AddScoped<IIdentityRepository, IdentityRepository>();
         services.AddScoped(typeof(IBaseRepository<>),typeof(BaseRepository<>));
         services.AddScoped<IAppointmentRepository,AppointmentRepository>();
+        services.AddScoped<ISendSmsQueueRepository,SendSmsQueueRepository>();
         return services;
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using MedicalBackend.DTOs;
 using MedicalBackend.Entities;
 using MedicalBackend.Hub;
@@ -16,14 +17,19 @@ public class AppointmentController : ControllerBase
 {
     private readonly IBaseRepository<Appointment> _baseRepository;
     private readonly IAppointmentRepository _appointmentRepository;
-    private IHubContext<MessageHub, IMessageHubClient> messageHub;
+    private IHubContext<MessageHub, IMessageHubClient> _messageHub;
+    private readonly ISendSmsQueueRepository _sendSmsQueueRepository;
+    private readonly IConfiguration _configuration;
 
-    public AppointmentController(IBaseRepository<Appointment> baseRepository,
-        IAppointmentRepository appointmentRepository, IHubContext<MessageHub, IMessageHubClient> _messageHub)
+    public AppointmentController(IBaseRepository<Appointment> baseRepository, IConfiguration configuration,
+        IAppointmentRepository appointmentRepository, IHubContext<MessageHub, IMessageHubClient> messageHub,
+        ISendSmsQueueRepository sendSmsQueueRepository)
     {
         _baseRepository = baseRepository;
         _appointmentRepository = appointmentRepository;
-        messageHub = _messageHub;
+        _messageHub = messageHub;
+        _sendSmsQueueRepository = sendSmsQueueRepository;
+        _configuration = configuration;
     }
 
     [HttpGet("getAll")]
@@ -44,7 +50,7 @@ public class AppointmentController : ControllerBase
 
         return Ok(response);
     }
-    
+
     [HttpGet("{roomId}/{doctorId}")]
     [HttpGet("roomId/{roomId}")]
     [HttpGet("doctorId/{doctorId}")]
@@ -69,10 +75,26 @@ public class AppointmentController : ControllerBase
         {
             return BadRequest();
         }
-        await messageHub.Clients.All.SendAppointmentToUser(response);
+
+        await _messageHub.Clients.All.SendAppointmentToUser(response);
+        var dateOfStartAppointment = response.Start.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var timeOfStartAppointment = response.Start.ToLocalTime().ToString("H:mm", CultureInfo.InvariantCulture);
+        var frontendLink = _configuration.GetSection("FrontendLink").Value ?? "";
+        await _sendSmsQueueRepository.Create(response.Id,
+            $"Te așteptăm în data de {dateOfStartAppointment} la ora {timeOfStartAppointment}. " +
+            $"Dacă vrei să anulezi programarea, intră pe următorul link: {frontendLink}/appointment/delete/{response.Id}",
+            DateTime.UtcNow);
+        if (DateTime.UtcNow.AddHours(48) <= response.Start)
+        {
+            await _sendSmsQueueRepository.Create(response.Id,
+                "Nu uita că în 24 de ore ești programat la cabinetul nostru." +
+                $"Dacă vrei să anulezi programarea, intră pe următorul link: {frontendLink}/appointment/delete/{response.Id}",
+                response.Start.AddHours(-24));
+        }
+
         return Ok(response);
     }
-    
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id)
     {
@@ -81,7 +103,9 @@ public class AppointmentController : ControllerBase
         {
             return BadRequest();
         }
-        await messageHub.Clients.All.SendAppointmentToUser(response);
+
+        await _messageHub.Clients.All.SendAppointmentToUser(response);
+        await _sendSmsQueueRepository.DeleteByAppointmentId(response.Id);
 
         return Ok();
     }

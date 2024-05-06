@@ -1,7 +1,9 @@
 using System.Text;
+using Coravel;
 using MedicalBackend.Database;
 using MedicalBackend.Entities;
 using MedicalBackend.Hub;
+using MedicalBackend.Services;
 using MedicalBackend.Utils;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -69,6 +71,8 @@ services.Configure<IdentityOptions>(options =>
 });
 
 services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+services.AddScheduler();
+services.AddTransient<SendSmsService>();
 services.AddSwaggerGen();
 services.AddSignalR();
 
@@ -83,6 +87,13 @@ if (builder.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+
+app.Services.UseScheduler(scheduler =>
+{
+    scheduler.Schedule<SendSmsService>()
+        .EverySeconds(59)
+        .PreventOverlapping(nameof(SendSmsService));
+});
 
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Medical.Api v1"));
