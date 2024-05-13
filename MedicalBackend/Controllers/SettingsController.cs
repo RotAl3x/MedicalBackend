@@ -33,7 +33,12 @@ public class SettingsController: ControllerBase
         {
             var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
             filename = DateTime.Now.Ticks.ToString() + extension;
-            var exactpath = Path.Combine("/Users/alexandru-daniellolea/Desktop/Projects/MedicalBackend/MedicalBackend/Images", filename);
+            var folderImages = "../Images";
+            if (!Directory.Exists(folderImages))
+            {
+                Directory.CreateDirectory(folderImages);
+            }
+            var exactpath = Path.Combine(folderImages, filename);
 
 
             using (var stream = new FileStream(exactpath, FileMode.Create))
