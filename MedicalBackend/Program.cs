@@ -24,7 +24,7 @@ services.AddCors(options =>
     options.AddPolicy("MedicalCorsPolicy", builder =>
     {
         builder
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins("http://localhost:4200","https://ambitious-field-0cda3541e.5.azurestaticapps.net")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
