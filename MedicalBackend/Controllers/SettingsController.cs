@@ -20,7 +20,7 @@ public class SettingsController: ControllerBase
     [HttpGet("photo/{name}")]
     public IActionResult Get([FromRoute] string name)
     {
-        var path = $"Images/{name}"; 
+        var path = $"../Images/{name}"; 
         var image = System.IO.File.OpenRead(path);
         return File(image, "image/jpeg");
     }
