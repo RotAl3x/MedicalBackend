@@ -77,8 +77,9 @@ public class AppointmentController : ControllerBase
         }
 
         await _messageHub.Clients.All.SendAppointmentToUser(response);
-        var dateOfStartAppointment = response.Start.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
-        var timeOfStartAppointment = response.Start.ToLocalTime().ToString("H:mm", CultureInfo.InvariantCulture);
+        var dateToLocalTime = obj.StartDateForMessage;
+        var dateOfStartAppointment = dateToLocalTime.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var timeOfStartAppointment = dateToLocalTime.ToString("H:mm", CultureInfo.InvariantCulture);
         var frontendLink = _configuration.GetSection("FrontendLink").Value ?? "";
         await _sendSmsQueueRepository.Create(response.Id,
             $"Te așteptăm în data de {dateOfStartAppointment} la ora {timeOfStartAppointment}. " +

@@ -7,6 +7,7 @@ public class AppointmentDto
     public Guid Id { get; set; }
     public Boolean IsDeleted { get; set; }
     public DateTime Start { get; set; }
+    public DateTime StartDateForMessage { get; set; }
     public DateTime End { get; set; }
     public Guid RoomOrDeviceId { get; set; }
     public string ApplicationUserId { get; set; }
