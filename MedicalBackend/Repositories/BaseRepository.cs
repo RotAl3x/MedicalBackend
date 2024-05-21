@@ -39,9 +39,12 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return response.Entity;
     }
 
-    public Task<TEntity> Edit(TEntity newObject)
-    {
-        throw new NotImplementedException();
+    public async Task<TEntity> Edit(TEntity newObject)
+    { 
+        var response = _table.Attach(newObject);
+        _table.Entry(newObject).State = EntityState.Modified;
+        await Save();
+        return response.Entity;
     }
 
     public async Task<string?> Delete(Guid id)
