@@ -64,7 +64,7 @@ public class IdentityRepository : IIdentityRepository
             Updated = DateTime.Now.ToUniversalTime(),
         };
 
-        var createResult = await _userManager.CreateAsync(user, "parola01");
+        var createResult = await _userManager.CreateAsync(user, _configuration.GetSection("Doctor:Password").Value);
 
         if (!createResult.Succeeded)
         {

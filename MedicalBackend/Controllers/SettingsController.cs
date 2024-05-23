@@ -1,5 +1,7 @@
 using MedicalBackend.Entities;
 using MedicalBackend.Repositories.Abstractions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedicalBackend.Controllers;
@@ -11,10 +13,21 @@ namespace MedicalBackend.Controllers;
 public class SettingsController: ControllerBase
 {
     private readonly IBaseRepository<Price> _baseRepository;
+    private readonly IConfiguration _configuration;
 
-    public SettingsController(IBaseRepository<Price> baseRepository)
+    public SettingsController(IBaseRepository<Price> baseRepository, IConfiguration configuration)
     {
         _baseRepository = baseRepository;
+        _configuration = configuration;
+    }
+
+    [HttpGet("doctor-initial-password")]
+    [Authorize(Roles = "Admin",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public IActionResult GetDoctorInitialPassword()
+    {
+        var password = _configuration.GetSection("Doctor:Password").Value;
+        return Ok(password ?? "");
     }
     
     [HttpGet("photo/{name}")]
