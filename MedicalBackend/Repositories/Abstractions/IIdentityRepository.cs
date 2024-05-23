@@ -10,4 +10,7 @@ public interface IIdentityRepository
     Task<string> Register(RegisterRequest request, string role);
 
     Task<string?> ChangePassword(ChangePasswordRequest request, ApplicationUser user);
+    
+    Task<string?> Delete(ApplicationUser user);
+
 }

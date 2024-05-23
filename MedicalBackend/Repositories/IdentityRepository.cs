@@ -98,6 +98,18 @@ public class IdentityRepository : IIdentityRepository
 
         return "Password has been changed";
     }
+    
+    public async Task<string?> Delete(ApplicationUser user)
+    {
+        var deleteAccount = await _userManager.DeleteAsync(user);
+
+        if (!deleteAccount.Succeeded)
+        {
+            return null;
+        }
+
+        return "Account has been deleted";
+    }
 
     private string GenerateToken(ApplicationUser newUser, string role)
     {

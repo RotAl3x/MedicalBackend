@@ -52,6 +52,26 @@ public class AuthController : ControllerBase
 
         return Ok(response);
     }
+    
+    [HttpDelete("deleteAccount/{id}")]
+    [Authorize(Roles = "Admin",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> Delete([FromRoute] string id)
+    {
+        var user = await _userManager.FindByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound("Error");
+        }
+        
+        var response = await _identityRepository.Delete(user);
+        if (response == null)
+        {
+            return BadRequest("Eroare");
+        }
+
+        return Ok(response);
+    }
 
     [HttpPost("changePassword")]
     [Authorize(Roles = "Admin,Doctor",
