@@ -52,7 +52,28 @@ public class AuthController : ControllerBase
 
         return Ok(response);
     }
-    
+
+    [HttpPost("changePassword")]
+    [Authorize(Roles = "Admin,Doctor",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var user = await _userManager.GetUserAsync(User);
+
+        if (user == null)
+        {
+            return NotFound("Error");
+        }
+
+        var response = await _identityRepository.ChangePassword(request, user);
+        if (response is null)
+        {
+            return BadRequest("Verifică formularul");
+        }
+
+        return Ok(response);
+    }
+
     [HttpGet("getAllUsersByRole/{role}")]
     public async Task<IActionResult> GetAllUsers([FromRoute] string role)
     {

@@ -101,8 +101,4 @@
       <PackageReference Include="Twilio" Version="7.0.5" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models\" />
-    </ItemGroup>
-
 </Project>

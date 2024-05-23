@@ -13,14 +13,14 @@ public class IdentityRepository : IIdentityRepository
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IConfiguration _configuration;
-    
+
     public IdentityRepository(UserManager<ApplicationUser> userManager, IConfiguration configuration)
     {
         _userManager = userManager;
         _configuration = configuration;
     }
-    
-     public async Task<Session> Login(LoginRequest request)
+
+    public async Task<Session> Login(LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
 
@@ -37,7 +37,7 @@ public class IdentityRepository : IIdentityRepository
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        
+
         var session = new Session
         {
             UserId = user.Id,
@@ -79,6 +79,24 @@ public class IdentityRepository : IIdentityRepository
         }
 
         return "User created successfully";
+    }
+
+    public async Task<string?> ChangePassword(ChangePasswordRequest request, ApplicationUser user)
+    {
+        if (!request.newPassword.Equals(request.repeatPassword))
+        {
+            return null;
+        }
+
+        var changePassword =
+            await _userManager.ChangePasswordAsync(user, request.currentPassword, request.newPassword);
+
+        if (!changePassword.Succeeded)
+        {
+            return null;
+        }
+
+        return "Password has been changed";
     }
 
     private string GenerateToken(ApplicationUser newUser, string role)
