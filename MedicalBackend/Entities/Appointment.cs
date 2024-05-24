@@ -15,6 +15,7 @@ public class Appointment:Entity
     [ForeignKey(("MedicalService"))]
     public Guid MedicalServiceId { get; set; }
     public MedicalService MedicalService { get; set; }
+    public string? Name { get; set; }
     public string Phone { get; set; }
     [ForeignKey(("Disease"))]
     public Guid DiseaseId { get; set; }

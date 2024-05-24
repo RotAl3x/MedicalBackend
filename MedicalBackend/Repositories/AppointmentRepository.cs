@@ -34,6 +34,7 @@ public class AppointmentRepository: BaseRepository<Appointment>,IAppointmentRepo
             RoomOrDeviceId = newObject.RoomOrDeviceId,
             ApplicationUserId = newObject.ApplicationUserId,
             MedicalServiceId = newObject.MedicalServiceId,
+            Name = newObject.Name,
             Phone = newObject.Phone,
             DiseaseId = newObject.DiseaseId,
             IsFree = newObject.IsFreeDay,
