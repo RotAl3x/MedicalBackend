@@ -61,7 +61,7 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByIdAsync(id);
         if (user == null)
         {
-            return NotFound("Error");
+            return NotFound("Eroare");
         }
         
         var response = await _identityRepository.Delete(user);

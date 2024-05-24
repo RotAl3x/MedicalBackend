@@ -57,7 +57,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
         entry.IsDeleted = true;
         await Save();
-        return "Deleted";
+        return "Șters";
     }
 
     public async Task Save()

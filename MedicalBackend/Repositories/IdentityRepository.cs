@@ -78,7 +78,7 @@ public class IdentityRepository : IIdentityRepository
             return null;
         }
 
-        return "User created successfully";
+        return "User creat";
     }
 
     public async Task<string?> ChangePassword(ChangePasswordRequest request, ApplicationUser user)
@@ -96,7 +96,7 @@ public class IdentityRepository : IIdentityRepository
             return null;
         }
 
-        return "Password has been changed";
+        return "Parola a fost schimbată";
     }
     
     public async Task<string?> Delete(ApplicationUser user)
@@ -108,7 +108,7 @@ public class IdentityRepository : IIdentityRepository
             return null;
         }
 
-        return "Account has been deleted";
+        return "User șters";
     }
 
     private string GenerateToken(ApplicationUser newUser, string role)

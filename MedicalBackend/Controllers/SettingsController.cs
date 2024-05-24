@@ -62,7 +62,7 @@ public class SettingsController: ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(("Unable to upload"));
+            return BadRequest(("Eroare"));
         }
     }
 }
