@@ -24,23 +24,37 @@ public class SendSmsService : IInvocable
         TwilioClient.Init(accountSid, authToken);
 
         var smsWhoNeedToBeSend = await _sendSmsQueueRepository.GetSmsWhoNeedToBeSend();
-        foreach (var sms in smsWhoNeedToBeSend)
+        await Parallel.ForEachAsync(smsWhoNeedToBeSend, async (sms, cancellationToken) =>
         {
-            var response = SendSms(sms.Appointment.Phone, sms.Message);
-            if (response.Status == MessageResource.StatusEnum.Queued)
+            if (sms.Sid != null)
             {
-               await _sendSmsQueueRepository.UpdateStatusSent(sms.Id);
+                var status = await GetStatus(sms.Sid);
+                await _sendSmsQueueRepository.UpdateStatusFromTwilio(sms.Sid, status);
             }
-        };
+        });
+        
+        smsWhoNeedToBeSend = await _sendSmsQueueRepository.GetSmsWhoNeedToBeSend();
+
+        await Parallel.ForEachAsync(smsWhoNeedToBeSend, async (sms, cancellationToken) =>
+        {
+            var response = await SendSms(sms.Appointment.Phone, sms.Message);
+            await _sendSmsQueueRepository.UpdateStatusSent(sms.Id, response.Sid, response.Status);
+        });
     }
 
-    private MessageResource SendSms(string number, string message)
+    private async Task<MessageResource> SendSms(string number, string message)
     {
-        var response = MessageResource.Create(
+        var response = MessageResource.CreateAsync(
             body: message,
             from: new Twilio.Types.PhoneNumber(_configuration.GetSection("Twilio:number").Value),
             to: new Twilio.Types.PhoneNumber(number)
         );
-        return response;
+        return await response;
+    }
+
+    private async Task<MessageResource.StatusEnum> GetStatus(string sid)
+    {
+        var response = await MessageResource.FetchAsync(pathSid: sid);
+        return response.Status;
     }
 }

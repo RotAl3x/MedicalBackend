@@ -1,7 +1,9 @@
 using MedicalBackend.Database;
 using MedicalBackend.Entities;
+using MedicalBackend.Enums;
 using MedicalBackend.Repositories.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace MedicalBackend.Repositories;
 
@@ -24,7 +26,6 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
             SendAfterDate = sendAfterDate,
             Message = message,
             RetryCount = 0,
-            Sent = false
         };
         await _dbContext.SendSmsQueue.AddAsync(sendSms);
         await _dbContext.SaveChangesAsync();
@@ -35,7 +36,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
         var smsList = await _dbContext.SendSmsQueue.Include(s => s.Appointment).Where(s =>
             s.SendAfterDate <= DateTime.UtcNow &&
             s.RetryCount < 5 &&
-            !s.Sent &&
+            s.Status != TwilioStatusEnum.delivered &&
             !s.IsDeleted &&
             !s.Appointment.IsDeleted
         ).ToListAsync();
@@ -51,14 +52,30 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
         return smsList;
     }
 
-    public async Task UpdateStatusSent(Guid sendSmsId)
+    public async Task UpdateStatusFromTwilio(string sid, MessageResource.StatusEnum status)
+    {
+        var sms = await _dbContext.SendSmsQueue.FirstOrDefaultAsync(s => s.Sid == sid);
+        if (sms is null)
+        {
+            return;
+        }
+
+        Enum.TryParse(status.ToString(), out TwilioStatusEnum twilioStatus);
+        sms.Status = twilioStatus;
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateStatusSent(Guid sendSmsId, string sid, MessageResource.StatusEnum status)
     {
         var sms = await _dbContext.SendSmsQueue.FirstOrDefaultAsync(s => s.Id == sendSmsId);
         if (sms is null)
         {
             return;
         }
-        sms.Sent = true;
+
+        sms.Sid = sid;
+        Enum.TryParse(status.ToString(), out TwilioStatusEnum twilioStatus);
+        sms.Status = twilioStatus;
 
         await _dbContext.SaveChangesAsync();
     }
@@ -70,11 +87,12 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
         {
             return;
         }
+
         sms.IsDeleted = true;
 
         await _dbContext.SaveChangesAsync();
     }
-    
+
     public async Task DeleteByAppointmentId(Guid appointmentId)
     {
         var sms = await _dbContext.SendSmsQueue.Where(s => s.AppointmentId == appointmentId).ToListAsync();
