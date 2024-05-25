@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using MedicalBackend.DTOs;
 using MedicalBackend.Entities;
@@ -57,10 +58,26 @@ public class AppointmentController : ControllerBase
     public async Task<ActionResult> GetByRoomIdOrDoctorId(Guid? roomId, string? doctorId)
     {
         var response = await _appointmentRepository.GetByRoomIdOrDoctorId(roomId, doctorId);
-        if (!response.Any())
-        {
-            return BadRequest();
-        }
+
+        return Ok(response);
+    }
+    
+    [HttpGet("cabinet-free-days")]
+    [Authorize(Roles = "Admin,Doctor",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<ActionResult> GetCabinetFreeDays()
+    {
+        var response = await _appointmentRepository.GetCabinetFreeDays();
+
+        return Ok(response);
+    }
+    
+    [HttpGet("doctor-free-days/{id}")]
+    [Authorize(Roles = "Admin,Doctor",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<ActionResult> GetDoctorFreeDays(string id)
+    {
+        var response = await _appointmentRepository.GetDoctorFreeDays(id);
 
         return Ok(response);
     }
@@ -77,7 +94,8 @@ public class AppointmentController : ControllerBase
         }
 
         await _messageHub.Clients.All.SendAppointmentToUser(response);
-        var dateToLocalTime = obj.StartDateForMessage;
+        if (obj.IsFreeDay || obj.IsDoctorFreeDay) return Ok(response);
+        var dateToLocalTime = obj.StartDateForMessage ?? new DateTime();
         var dateOfStartAppointment = dateToLocalTime.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
         var timeOfStartAppointment = dateToLocalTime.ToString("H:mm", CultureInfo.InvariantCulture);
         var frontendLink = _configuration.GetSection("FrontendLink").Value ?? "";

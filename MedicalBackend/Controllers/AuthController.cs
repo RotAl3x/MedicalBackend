@@ -99,11 +99,6 @@ public class AuthController : ControllerBase
     {
         var users = await _userManager.GetUsersInRoleAsync(role);
 
-        if (!users.Any())
-        {
-            return NotFound("Nu există");
-        }
-
         return Ok(users);
     }
 }
