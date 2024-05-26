@@ -37,6 +37,10 @@ public class IdentityRepository : IIdentityRepository
         }
 
         var roles = await _userManager.GetRolesAsync(user);
+        if (roles.Count > 1)
+        {
+            roles = roles.Where(r => r != "User").ToList();
+        }
 
         var session = new Session
         {
