@@ -119,7 +119,7 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-    var roles = new[] { "Admin" };
+    var roles = new[] { "User", "Doctor", "Admin" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
@@ -155,7 +155,7 @@ using (var scope = app.Services.CreateScope())
 
         UserManager<ApplicationUser> _userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
         ApplicationUser userToAddRole = await _userManager.FindByEmailAsync(user.Email);
-        await _userManager.AddToRolesAsync(userToAddRole, roles);
+        await _userManager.AddToRoleAsync(userToAddRole, "Admin");
 
         await context.SaveChangesAsync();
     }
