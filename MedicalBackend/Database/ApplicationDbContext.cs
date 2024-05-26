@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Disease> Diseases { get; set; }
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<SendSmsQueue> SendSmsQueue { get; set; }
+    public DbSet<Settings> Settings { get; set; }
     
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {

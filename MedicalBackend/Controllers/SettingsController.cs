@@ -12,13 +12,42 @@ namespace MedicalBackend.Controllers;
 
 public class SettingsController: ControllerBase
 {
-    private readonly IBaseRepository<Price> _baseRepository;
+    private readonly IBaseRepository<Settings> _baseRepository;
     private readonly IConfiguration _configuration;
 
-    public SettingsController(IBaseRepository<Price> baseRepository, IConfiguration configuration)
+    public SettingsController(IBaseRepository<Settings> baseRepository, IConfiguration configuration)
     {
         _baseRepository = baseRepository;
         _configuration = configuration;
+    }
+    
+    [HttpGet]
+    public async Task<IActionResult> GetSettings()
+    {
+        var response = await _baseRepository.GetAll();
+        if (!response.Any())
+        {
+            return Ok();
+        }
+        return Ok(response[0]);
+    }
+    
+    [HttpPut]
+    [Authorize(Roles = "Admin",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> EditSettings([FromBody] Settings settings)
+    {
+        var response = await _baseRepository.Edit(settings);
+        return Ok(response);
+    }
+    
+    [HttpPost]
+    [Authorize(Roles = "Admin",
+        AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> CreateSettings([FromBody] Settings settings)
+    {
+        var response = await _baseRepository.Create(settings);
+        return Ok(response);
     }
 
     [HttpGet("doctor-initial-password")]
