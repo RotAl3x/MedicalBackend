@@ -129,13 +129,13 @@ public class AppointmentController : ControllerBase
         
         var cabinetName = _configuration.GetSection("CabinetName").Value ?? "";
         await _sendSmsQueueRepository.Create(response.Id,
-            $"{cabinetName} în data {dateOfStartAppointment}-{timeOfStartAppointment}, " +
-            $"anulezi: {linkDeleteShorten}",
+            $"Te așteptăm la {cabinetName} în data {dateOfStartAppointment}-{timeOfStartAppointment}, " +
+            $"Dacă vrei să anulezi: {linkDeleteShorten}",
             DateTime.UtcNow);
         if (DateTime.UtcNow.AddHours(48) <= response.Start)
         {
             await _sendSmsQueueRepository.Create(response.Id,
-                $"24 de ore {cabinetName}." +
+                $"24 de ore până la programarea la {cabinetName}." +
                 $"Anulezi: {linkDeleteShorten}",
                 response.Start.AddHours(-24));
         }
