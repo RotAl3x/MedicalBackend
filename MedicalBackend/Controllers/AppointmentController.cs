@@ -23,8 +23,9 @@ public class AppointmentController : ControllerBase
     private IHubContext<MessageHub, IMessageHubClient> _messageHub;
     private readonly ISendSmsQueueRepository _sendSmsQueueRepository;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<AppointmentController> _logger;
 
-    public AppointmentController(IBaseRepository<Appointment> baseRepository, IConfiguration configuration,
+    public AppointmentController(IBaseRepository<Appointment> baseRepository, IConfiguration configuration, ILogger<AppointmentController> logger,
         IAppointmentRepository appointmentRepository, IHubContext<MessageHub, IMessageHubClient> messageHub,
         ISendSmsQueueRepository sendSmsQueueRepository)
     {
@@ -33,6 +34,7 @@ public class AppointmentController : ControllerBase
         _messageHub = messageHub;
         _sendSmsQueueRepository = sendSmsQueueRepository;
         _configuration = configuration;
+        _logger = logger;
     }
 
     [HttpGet("getAll")]
@@ -119,8 +121,9 @@ public class AppointmentController : ControllerBase
             _httpClient.DefaultRequestHeaders.Add("authorization", shortKey);
             var responseShort = await _httpClient.PostAsync("https://api.short.io/links/public", content);
             var jsonString = await responseShort.Content.ReadAsStringAsync();
+            _logger.LogInformation("Short: {0}",jsonString);
             ShortResponse shortObject =
-                Newtonsoft.Json.JsonConvert.DeserializeObject<ShortResponse>(jsonString ?? "");
+                Newtonsoft.Json.JsonConvert.DeserializeObject<ShortResponse>(jsonString ?? "") ?? new ShortResponse();
             linkDeleteShorten = shortObject?.shortURL;
         }
 
