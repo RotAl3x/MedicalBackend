@@ -101,14 +101,14 @@ public class AppointmentController : ControllerBase
         var frontendLink = _configuration.GetSection("FrontendLink").Value ?? "";
         var cabinetName = _configuration.GetSection("CabinetName").Value ?? "";
         await _sendSmsQueueRepository.Create(response.Id,
-            $"Te așteptăm la cabinetul {cabinetName} în data de {dateOfStartAppointment} la ora {timeOfStartAppointment}. " +
-            $"Dacă vrei să anulezi programarea, intră pe următorul link: {frontendLink}/appointment/delete/{response.Id}",
+            $"{cabinetName} în data {dateOfStartAppointment}-{timeOfStartAppointment}, " +
+            $"anulezi: {frontendLink}/appointment/delete/{response.Id}",
             DateTime.UtcNow);
         if (DateTime.UtcNow.AddHours(48) <= response.Start)
         {
             await _sendSmsQueueRepository.Create(response.Id,
-                $"Nu uita că în 24 de ore ești programat la cabinetul {cabinetName}." +
-                $"Dacă vrei să anulezi programarea, intră pe următorul link: {frontendLink}/appointment/delete/{response.Id}",
+                $"24 de ore{cabinetName}." +
+                $"Anulezi: {frontendLink}/appointment/delete/{response.Id}",
                 response.Start.AddHours(-24));
         }
 

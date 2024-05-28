@@ -35,7 +35,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
     {
         var smsList = await _dbContext.SendSmsQueue.Include(s => s.Appointment).Where(s =>
             s.SendAfterDate <= DateTime.UtcNow &&
-            s.RetryCount < 5 &&
+            s.RetryCount < 10 &&
             s.Status != TwilioStatusEnum.delivered &&
             !s.IsDeleted &&
             !s.Appointment.IsDeleted
@@ -44,7 +44,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
         foreach (var sms in smsList)
         {
             sms.Updated = DateTime.UtcNow;
-            sms.RetryCount = sms.RetryCount++;
+            sms.RetryCount = (sms.RetryCount > 0 ? sms.RetryCount: 0 ) + 1;
         }
 
         await _dbContext.SaveChangesAsync();
