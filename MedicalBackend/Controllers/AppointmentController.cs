@@ -1,10 +1,12 @@
 using System.Diagnostics.Metrics;
 using System.Globalization;
+using System.Text;
 using MedicalBackend.DTOs;
 using MedicalBackend.Entities;
 using MedicalBackend.Hub;
 using MedicalBackend.Hub.Abstractions;
 using MedicalBackend.Repositories.Abstractions;
+using MedicalBackend.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -61,7 +63,7 @@ public class AppointmentController : ControllerBase
 
         return Ok(response);
     }
-    
+
     [HttpGet("cabinet-free-days")]
     [Authorize(Roles = "Admin,Doctor",
         AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -71,7 +73,7 @@ public class AppointmentController : ControllerBase
 
         return Ok(response);
     }
-    
+
     [HttpGet("doctor-free-days/{id}")]
     [Authorize(Roles = "Admin,Doctor",
         AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -99,16 +101,42 @@ public class AppointmentController : ControllerBase
         var dateOfStartAppointment = dateToLocalTime.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
         var timeOfStartAppointment = dateToLocalTime.ToString("H:mm", CultureInfo.InvariantCulture);
         var frontendLink = _configuration.GetSection("FrontendLink").Value ?? "";
+        
+        //short a link
+        var linkDeleteShorten = "";
+        using (var _httpClient = new HttpClient())
+        {
+            var shortUrl = _configuration.GetSection("Short:url").Value ?? "";
+            var shortKey = _configuration.GetSection("Short:key").Value ?? "";
+            var request = new
+            {
+                domain = shortUrl,
+                originalURL = $"{frontendLink}/appointment/delete/{response.Id}"
+            };
+
+            var jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(request);
+            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+            _httpClient.DefaultRequestHeaders.Add("authorization", shortKey);
+            var responseShort = await _httpClient.PostAsync("https://api.short.io/links/public", content);
+            var jsonString = await responseShort.Content.ReadAsStringAsync();
+            ShortResponse shortObject =
+                Newtonsoft.Json.JsonConvert.DeserializeObject<ShortResponse>(jsonString ?? "");
+            linkDeleteShorten = shortObject?.shortURL;
+        }
+
+        //can be send
+        linkDeleteShorten = linkDeleteShorten?.Replace('.', '\0');
+        
         var cabinetName = _configuration.GetSection("CabinetName").Value ?? "";
         await _sendSmsQueueRepository.Create(response.Id,
             $"{cabinetName} în data {dateOfStartAppointment}-{timeOfStartAppointment}, " +
-            $"anulezi: {frontendLink}/appointment/delete/{response.Id}",
+            $"anulezi: {linkDeleteShorten}",
             DateTime.UtcNow);
         if (DateTime.UtcNow.AddHours(48) <= response.Start)
         {
             await _sendSmsQueueRepository.Create(response.Id,
-                $"24 de ore{cabinetName}." +
-                $"Anulezi: {frontendLink}/appointment/delete/{response.Id}",
+                $"24 de ore {cabinetName}." +
+                $"Anulezi: {linkDeleteShorten}",
                 response.Start.AddHours(-24));
         }
 
