@@ -128,7 +128,7 @@ public class AppointmentController : ControllerBase
         }
 
         //can be send
-        linkDeleteShorten = linkDeleteShorten?.Replace('.', '\0');
+        linkDeleteShorten = linkDeleteShorten?.Replace('.', 'I');
         
         var cabinetName = _configuration.GetSection("CabinetName").Value ?? "";
         await _sendSmsQueueRepository.Create(response.Id,
