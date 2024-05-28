@@ -47,7 +47,8 @@ public class SendSmsService : IInvocable
         var response = MessageResource.CreateAsync(
             body: message,
             from: new Twilio.Types.PhoneNumber(_configuration.GetSection("Twilio:number").Value),
-            to: new Twilio.Types.PhoneNumber(number)
+            to: new Twilio.Types.PhoneNumber(number),
+            shortenUrls: true
         );
         return await response;
     }
