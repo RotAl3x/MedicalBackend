@@ -6,7 +6,7 @@ using MedicalBackend.Entities;
 using MedicalBackend.Hub;
 using MedicalBackend.Hub.Abstractions;
 using MedicalBackend.Repositories.Abstractions;
-using MedicalBackend.Utils;
+using MedicalBackend.Services.Abstraction;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,9 +24,10 @@ public class AppointmentController : ControllerBase
     private readonly ISendSmsQueueRepository _sendSmsQueueRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AppointmentController> _logger;
+    private readonly IShortLinkService _shortLinkService;
 
     public AppointmentController(IBaseRepository<Appointment> baseRepository, IConfiguration configuration, ILogger<AppointmentController> logger,
-        IAppointmentRepository appointmentRepository, IHubContext<MessageHub, IMessageHubClient> messageHub,
+        IAppointmentRepository appointmentRepository, IHubContext<MessageHub, IMessageHubClient> messageHub, IShortLinkService shortLinkService,
         ISendSmsQueueRepository sendSmsQueueRepository)
     {
         _baseRepository = baseRepository;
@@ -35,6 +36,7 @@ public class AppointmentController : ControllerBase
         _sendSmsQueueRepository = sendSmsQueueRepository;
         _configuration = configuration;
         _logger = logger;
+        _shortLinkService = shortLinkService;
     }
 
     [HttpGet("getAll")]
@@ -105,28 +107,7 @@ public class AppointmentController : ControllerBase
         var frontendLink = _configuration.GetSection("FrontendLink").Value ?? "";
         
         //short a link
-        var linkDeleteShorten = "";
-        using (var _httpClient = new HttpClient())
-        {
-            var shortUrl = _configuration.GetSection("Short:url").Value ?? "";
-            var shortKey = _configuration.GetSection("Short:key").Value ?? "";
-            var request = new
-            {
-                domain = shortUrl,
-                originalURL = $"{frontendLink}/appointment/delete/{response.Id}"
-            };
-
-            var jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(request);
-            var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
-            _httpClient.DefaultRequestHeaders.Add("authorization", shortKey);
-            var responseShort = await _httpClient.PostAsync("https://api.short.io/links/public", content);
-            var jsonString = await responseShort.Content.ReadAsStringAsync();
-            _logger.LogInformation("Short: {0}",jsonString);
-            ShortResponse shortObject =
-                Newtonsoft.Json.JsonConvert.DeserializeObject<ShortResponse>(jsonString ?? "") ?? new ShortResponse();
-            linkDeleteShorten = shortObject?.shortURL;
-        }
-
+        var linkDeleteShorten = await _shortLinkService.ShortLink($"{frontendLink}/appointment/delete/{response.Id}");
         //can be send
         linkDeleteShorten = linkDeleteShorten?.Replace('.', 'I');
         

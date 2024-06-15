@@ -9,5 +9,4 @@ public interface IBaseRepository<TEntity> where TEntity : class
     Task<TEntity> Create(TEntity newObject);
     Task<TEntity> Edit(TEntity newObject);
     Task<string?> Delete(Guid id);
-    Task Save();
 }
