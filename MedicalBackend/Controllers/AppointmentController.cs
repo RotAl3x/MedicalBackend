@@ -119,7 +119,7 @@ public class AppointmentController : ControllerBase
         if (DateTime.UtcNow.AddHours(48) <= response.Start)
         {
             await _sendSmsQueueRepository.Create(response.Id,
-                $"24 de ore până la programarea la {cabinetName}." +
+                $"24 de ore până la programarea la {cabinetName}. " +
                 $"Anulezi: {linkDeleteShorten}",
                 response.Start.AddHours(-24));
         }
