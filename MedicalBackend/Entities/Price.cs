@@ -3,7 +3,7 @@ namespace MedicalBackend.Entities;
 public class Price : Entity
 {
     public string Name { get; set; }
-    
+
     public string Description { get; set; }
 
     public decimal PriceForOne { get; set; }

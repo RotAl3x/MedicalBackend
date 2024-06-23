@@ -5,12 +5,11 @@ namespace MedicalBackend.Repositories.Abstractions;
 
 public interface IIdentityRepository
 {
-    Task<Session> Login(LoginRequest request);
-    
-    Task<string> Register(RegisterRequest request, string role);
+    Task<Session> Login(LoginModel model);
 
-    Task<string?> ChangePassword(ChangePasswordRequest request, ApplicationUser user);
-    
+    Task<string?> Register(RegisterModel model, string role);
+
+    Task<string?> ChangePassword(ChangePasswordModel model, ApplicationUser user);
+
     Task<string?> Delete(ApplicationUser user);
-
 }

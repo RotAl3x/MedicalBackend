@@ -6,7 +6,11 @@ namespace MedicalBackend.Database;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public DbSet<Price> Prices { get; set; } 
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
+
+    public DbSet<Price> Prices { get; set; }
     public DbSet<Doctor> Doctors { get; set; }
     public DbSet<TestimonialPerson> TestimonialPersons { get; set; }
     public DbSet<WorkHoursDay> WorkHoursDays { get; set; }
@@ -17,8 +21,4 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<SendSmsQueue> SendSmsQueue { get; set; }
     public DbSet<Settings> Settings { get; set; }
-    
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-    {
-    }
 }

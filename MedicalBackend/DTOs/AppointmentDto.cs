@@ -1,11 +1,9 @@
-using MedicalBackend.Entities;
-
 namespace MedicalBackend.DTOs;
 
 public class AppointmentDto
 {
     public Guid Id { get; set; }
-    public Boolean IsDeleted { get; set; }
+    public bool IsDeleted { get; set; }
     public DateTime Start { get; set; }
     public DateTime? StartDateForMessage { get; set; }
     public DateTime End { get; set; }

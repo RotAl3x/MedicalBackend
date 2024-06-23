@@ -1,5 +1,3 @@
-using MedicalBackend.Entities;
-
 namespace MedicalBackend.Repositories.Abstractions;
 
 public interface IBaseRepository<TEntity> where TEntity : class
