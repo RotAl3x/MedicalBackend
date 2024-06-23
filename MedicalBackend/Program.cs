@@ -17,22 +17,19 @@ var services = builder.Services;
 var configuration = builder.Configuration;
 
 services.AddControllersWithViews().AddNewtonsoftJson();
-services.AddRazorPages();
 
 services.AddCors(options =>
 {
     options.AddPolicy("MedicalCorsPolicy", builder =>
     {
         builder
-            .WithOrigins("http://localhost:4200","https://ambitious-field-0cda3541e.5.azurestaticapps.net")
+            .WithOrigins("http://localhost:4200", "https://ambitious-field-0cda3541e.5.azurestaticapps.net")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials()
-            .SetIsOriginAllowed((hosts)=>true);
+            .SetIsOriginAllowed(hosts => true);
     });
 });
-
-services.AddAutoMapper(typeof(MappingProfile));
 
 services.AddDefaultIdentity<ApplicationUser>()
     .AddRoles<IdentityRole>()
@@ -61,12 +58,11 @@ services.Configure<IdentityOptions>(options =>
 {
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
+    options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
-    options.Password.RequiredUniqueChars = 3;
 
-    options.SignIn.RequireConfirmedEmail = true;
+    options.SignIn.RequireConfirmedEmail = false;
     options.ClaimsIdentity.UserIdClaimType = "id";
 });
 
@@ -76,17 +72,11 @@ services.AddTransient<SendSmsService>();
 services.AddSwaggerGen();
 services.AddSignalR();
 
-var connectionString = configuration.GetConnectionString("Default");
-services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(connectionString));
+services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("Default")));
 
 services.AddCoreSpecifications();
 
 var app = builder.Build();
-
-if (builder.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
 
 app.Services.UseScheduler(scheduler =>
 {
@@ -95,13 +85,12 @@ app.Services.UseScheduler(scheduler =>
         .PreventOverlapping(nameof(SendSmsService));
 });
 
-app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Medical.Api v1"));
-
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors("MedicalCorsPolicy");
+app.UseSwagger();
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Medical.Api v1"));
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -111,7 +100,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllerRoute(
         "default",
         "admin/{controller=Home}/{action=Index}/{id?}");
-    endpoints.MapRazorPages();
     endpoints.MapHub<MessageHub>("/appointment");
 });
 
@@ -121,11 +109,9 @@ using (var scope = app.Services.CreateScope())
 
     var roles = new[] { "User", "Doctor", "Admin" };
     foreach (var role in roles)
-    {
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
-    }
-    
+
     var emailAdmin = configuration.GetValue<string>("Admin:Email");
     var passwordAdmin = configuration.GetValue<string>("Admin:Password");
 
@@ -139,7 +125,7 @@ using (var scope = app.Services.CreateScope())
         LastName = "01",
         EmailConfirmed = true,
         Created = DateTime.Now.ToUniversalTime(),
-        Updated = DateTime.Now.ToUniversalTime(),
+        Updated = DateTime.Now.ToUniversalTime()
     };
 
     var context = scope.ServiceProvider.GetService<ApplicationDbContext>();
@@ -153,8 +139,8 @@ using (var scope = app.Services.CreateScope())
         var userStore = new UserStore<ApplicationUser>(context);
         await userStore.CreateAsync(user);
 
-        UserManager<ApplicationUser> _userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
-        ApplicationUser userToAddRole = await _userManager.FindByEmailAsync(user.Email);
+        var _userManager = scope.ServiceProvider.GetService<UserManager<ApplicationUser>>();
+        var userToAddRole = await _userManager.FindByEmailAsync(user.Email);
         await _userManager.AddToRoleAsync(userToAddRole, "Admin");
 
         await context.SaveChangesAsync();

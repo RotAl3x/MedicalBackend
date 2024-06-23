@@ -6,11 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MedicalBackend.Controllers;
 
-
 [ApiController]
 [Route("/api/settings")]
-
-public class SettingsController: ControllerBase
+public class SettingsController : ControllerBase
 {
     private readonly IBaseRepository<Settings> _baseRepository;
     private readonly IConfiguration _configuration;
@@ -20,18 +18,15 @@ public class SettingsController: ControllerBase
         _baseRepository = baseRepository;
         _configuration = configuration;
     }
-    
+
     [HttpGet]
     public async Task<IActionResult> GetSettings()
     {
         var response = await _baseRepository.GetAll();
-        if (!response.Any())
-        {
-            return Ok();
-        }
+        if (!response.Any()) return Ok();
         return Ok(response[0]);
     }
-    
+
     [HttpPut]
     [Authorize(Roles = "Admin",
         AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -40,7 +35,7 @@ public class SettingsController: ControllerBase
         var response = await _baseRepository.Edit(settings);
         return Ok(response);
     }
-    
+
     [HttpPost]
     [Authorize(Roles = "Admin",
         AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -58,11 +53,11 @@ public class SettingsController: ControllerBase
         var password = _configuration.GetSection("Doctor:Password").Value;
         return Ok(password ?? "");
     }
-    
+
     [HttpGet("photo/{name}")]
     public IActionResult Get([FromRoute] string name)
     {
-        var path = $"../Images/{name}"; 
+        var path = $"../Images/{name}";
         var image = System.IO.File.OpenRead(path);
         return File(image, "image/jpeg");
     }
@@ -70,16 +65,13 @@ public class SettingsController: ControllerBase
     [HttpPost("photo/upload-photo")]
     public async Task<ActionResult> SaveFile(IFormFile file)
     {
-        string filename = "";
+        var filename = "";
         try
         {
             var extension = "." + file.FileName.Split('.')[file.FileName.Split('.').Length - 1];
-            filename = DateTime.Now.Ticks.ToString() + extension;
+            filename = DateTime.Now.Ticks + extension;
             var folderImages = "../Images";
-            if (!Directory.Exists(folderImages))
-            {
-                Directory.CreateDirectory(folderImages);
-            }
+            if (!Directory.Exists(folderImages)) Directory.CreateDirectory(folderImages);
             var exactpath = Path.Combine(folderImages, filename);
 
 
@@ -87,11 +79,12 @@ public class SettingsController: ControllerBase
             {
                 await file.CopyToAsync(stream);
             }
+
             return Ok(filename);
         }
         catch (Exception ex)
         {
-            return BadRequest(("Eroare"));
+            return BadRequest("Eroare");
         }
     }
 }

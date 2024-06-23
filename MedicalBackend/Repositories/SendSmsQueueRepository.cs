@@ -18,14 +18,14 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
 
     public async Task Create(Guid appointmentId, string message, DateTime sendAfterDate)
     {
-        var sendSms = new SendSmsQueue()
+        var sendSms = new SendSmsQueue
         {
             AppointmentId = appointmentId,
             Created = DateTime.UtcNow,
             Updated = DateTime.UtcNow,
             SendAfterDate = sendAfterDate,
             Message = message,
-            RetryCount = 0,
+            RetryCount = 0
         };
         await _dbContext.SendSmsQueue.AddAsync(sendSms);
         await _dbContext.SaveChangesAsync();
@@ -44,7 +44,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
         foreach (var sms in smsList)
         {
             sms.Updated = DateTime.UtcNow;
-            sms.RetryCount = (sms.RetryCount > 0 ? sms.RetryCount: 0 ) + 1;
+            sms.RetryCount = (sms.RetryCount > 0 ? sms.RetryCount : 0) + 1;
         }
 
         await _dbContext.SaveChangesAsync();
@@ -55,10 +55,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
     public async Task UpdateStatusFromTwilio(string sid, MessageResource.StatusEnum status)
     {
         var sms = await _dbContext.SendSmsQueue.FirstOrDefaultAsync(s => s.Sid == sid);
-        if (sms is null)
-        {
-            return;
-        }
+        if (sms is null) return;
 
         Enum.TryParse(status.ToString(), out TwilioStatusEnum twilioStatus);
         sms.Status = twilioStatus;
@@ -68,10 +65,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
     public async Task UpdateStatusSent(Guid sendSmsId, string sid, MessageResource.StatusEnum status)
     {
         var sms = await _dbContext.SendSmsQueue.FirstOrDefaultAsync(s => s.Id == sendSmsId);
-        if (sms is null)
-        {
-            return;
-        }
+        if (sms is null) return;
 
         sms.Sid = sid;
         Enum.TryParse(status.ToString(), out TwilioStatusEnum twilioStatus);
@@ -83,10 +77,7 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
     public async Task Delete(Guid sendSmsId)
     {
         var sms = await _dbContext.SendSmsQueue.FirstOrDefaultAsync(s => s.Id == sendSmsId);
-        if (sms is null)
-        {
-            return;
-        }
+        if (sms is null) return;
 
         sms.IsDeleted = true;
 
@@ -96,15 +87,9 @@ public class SendSmsQueueRepository : ISendSmsQueueRepository
     public async Task DeleteByAppointmentId(Guid appointmentId)
     {
         var sms = await _dbContext.SendSmsQueue.Where(s => s.AppointmentId == appointmentId).ToListAsync();
-        if (!sms.Any())
-        {
-            return;
-        }
+        if (!sms.Any()) return;
 
-        foreach (var s in sms)
-        {
-            s.IsDeleted = true;
-        }
+        foreach (var s in sms) s.IsDeleted = true;
 
         await _dbContext.SaveChangesAsync();
     }

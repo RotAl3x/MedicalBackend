@@ -2,6 +2,7 @@ using Coravel.Invocable;
 using MedicalBackend.Repositories.Abstractions;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
 namespace MedicalBackend.Services;
 
@@ -18,8 +19,8 @@ public class SendSmsService : IInvocable
 
     public async Task Invoke()
     {
-        string accountSid = _configuration.GetSection("Twilio:accountSid").Value;
-        string authToken = _configuration.GetSection("Twilio:authToken").Value;
+        var accountSid = _configuration.GetSection("Twilio:accountSid").Value;
+        var authToken = _configuration.GetSection("Twilio:authToken").Value;
 
         TwilioClient.Init(accountSid, authToken);
 
@@ -32,7 +33,7 @@ public class SendSmsService : IInvocable
                 await _sendSmsQueueRepository.UpdateStatusFromTwilio(sms.Sid, status);
             }
         });
-        
+
         smsWhoNeedToBeSend = await _sendSmsQueueRepository.GetSmsWhoNeedToBeSend();
 
         await Parallel.ForEachAsync(smsWhoNeedToBeSend, async (sms, cancellationToken) =>
@@ -46,8 +47,8 @@ public class SendSmsService : IInvocable
     {
         var response = MessageResource.CreateAsync(
             body: message,
-            from: new Twilio.Types.PhoneNumber(_configuration.GetSection("Twilio:number").Value),
-            to: new Twilio.Types.PhoneNumber(number),
+            from: new PhoneNumber(_configuration.GetSection("Twilio:number").Value),
+            to: new PhoneNumber(number),
             shortenUrls: true
         );
         return await response;
@@ -55,7 +56,7 @@ public class SendSmsService : IInvocable
 
     private async Task<MessageResource.StatusEnum> GetStatus(string sid)
     {
-        var response = await MessageResource.FetchAsync(pathSid: sid);
+        var response = await MessageResource.FetchAsync(sid);
         return response.Status;
     }
 }

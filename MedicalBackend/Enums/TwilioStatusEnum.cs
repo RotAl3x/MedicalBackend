@@ -13,5 +13,5 @@ public enum TwilioStatusEnum
     scheduled,
     read,
     partiallyDelivered,
-    canceled,
+    canceled
 }

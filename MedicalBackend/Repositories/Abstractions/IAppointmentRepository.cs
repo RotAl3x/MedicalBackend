@@ -3,7 +3,7 @@ using MedicalBackend.Entities;
 
 namespace MedicalBackend.Repositories.Abstractions;
 
-public interface IAppointmentRepository:IBaseRepository<Appointment>
+public interface IAppointmentRepository : IBaseRepository<Appointment>
 {
     Task<IEnumerable<Appointment>> GetByRoomIdOrDoctorId(Guid? roomOrDeviceId, string? doctorUserId);
     Task<Appointment> Create(AppointmentDto newObject);

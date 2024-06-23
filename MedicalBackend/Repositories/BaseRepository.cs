@@ -9,7 +9,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly DbSet<TEntity> _table;
-    
+
     public BaseRepository(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -18,16 +18,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public Task<List<TEntity>> GetAll()
     {
-        return _table.Where(t=>!t.IsDeleted).ToListAsync();
+        return _table.Where(t => !t.IsDeleted).ToListAsync();
     }
 
     public async Task<TEntity> GetById(Guid id)
     {
         var entry = await _table.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-        if (entry is null)
-        {
-            return null;
-        }
+        if (entry is null) return null;
         return entry;
     }
 
@@ -40,7 +37,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     }
 
     public async Task<TEntity> Edit(TEntity newObject)
-    { 
+    {
         var response = _table.Attach(newObject);
         _table.Entry(newObject).State = EntityState.Modified;
         await Save();
@@ -50,10 +47,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     public async Task<string?> Delete(Guid id)
     {
         var entry = await _table.FirstOrDefaultAsync(t => t.Id == id);
-        if (entry is null)
-        {
-            return null;
-        }
+        if (entry is null) return null;
 
         entry.IsDeleted = true;
         await Save();
@@ -64,5 +58,4 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     {
         await _dbContext.SaveChangesAsync();
     }
-    
 }
